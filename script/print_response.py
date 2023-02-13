@@ -3,9 +3,11 @@ import asyncio
 import json
 import sys
 
+print(sys.path)
 import aiohttp
 
-sys.path.append("../")
+sys.path.append("..")
+
 from pymultimatic.api import Connector, ApiError, urls
 from pymultimatic.model import mapper
 

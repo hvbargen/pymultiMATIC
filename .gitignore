@@ -112,3 +112,5 @@ venv*/
 
 #project custom
 script/dump_result
+
+output/
