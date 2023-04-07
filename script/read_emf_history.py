@@ -3,28 +3,37 @@ import asyncio
 import json
 import datetime
 import sys
-
 import aiohttp
+from pathlib import Path
 
-sys.path.append("..")
+sys.path.append(str((Path(__file__).parent.parent.resolve())))
+print(sys.path)
 
 from pymultimatic.api import Connector, ApiError, urls
 from pymultimatic.model import mapper
 
+device_ids = {
+    "Wärmepumpe": "NoneGateway-LL_HMU03_0351_HP_Platform_Outdoor_Monobloc_PR_EBUS",
+    "Hydraulikstation": "NoneGateway-LL_VWZ02_0351_HP_Platform_Indoor_Monobloc_PR_EBUS",
+}
+functions = {
+    "Heizung": "CENTRAL_HEATING",
+    "Warmwasser": "DHW",
+}
+energy_types = {
+    "Stromverbrauch": "CONSUMED_ELECTRICAL_POWER",
+    "Umweltenergie": "ENVIRONMENTAL_YIELD"
+}
 
-async def main(user, passw, first_day, time_range):
+async def read_data(user: str, passw: str, first_day, time_range, device_id: str, function: str, energy_type: str, fname: str):
 
     end_date = datetime.date.today()
     begin_date = datetime.date.fromisoformat(first_day)
 
-    # device_id = "NoneGateway-LL_HMU03_0351_HP_Platform_Outdoor_Monobloc_PR_EBUS"
-    device_id = "NoneGateway-LL_VWZ02_0351_HP_Platform_Indoor_Monobloc_PR_EBUS"
-    # function = "CENTRAL_HEATING"
-    function = "DHW"
-    energy_type = "CONSUMED_ELECTRICAL_POWER"
-    # energy_type = "ENVIRONMENTAL_YIELD"
+    outf = open(Path("output") / fname, "wt", encoding="utf-8")
 
-    print(f"// Retrieving EMF data for {device_id=} function={function}\n// {time_range=} {begin_date=} {end_date=} ")
+    print(f"// Retrieving EMF data for {device_id=} function={function}\n// {time_range=} {begin_date=} {end_date=} ...")
+    print(f"// Retrieving EMF data for {device_id=} function={function}\n// {time_range=} {begin_date=} {end_date=} ", file=outf)
 
     print('// Trying to connect with user ' + user)
 
@@ -46,7 +55,7 @@ async def main(user, passw, first_day, time_range):
 
         next_date = begin_date
 
-        print("[")
+        print("[", file=outf)
         first = True
         try:
             while next_date <= end_date:
@@ -61,9 +70,10 @@ async def main(user, passw, first_day, time_range):
                 if first:
                     first = False
                 else:
-                    print(",")
-                print(f"// {url}")
-                print(json.dumps(await connector.get(url)))
+                    print(",", file=outf)
+                print(f"// {url}", file=outf)
+
+                print(json.dumps(await connector.get(url)), file=outf)
 
                 if time_range == "DAY":
                     next_date += datetime.timedelta(days=1)
@@ -73,15 +83,24 @@ async def main(user, passw, first_day, time_range):
                     raise NotImplementedError("addMonth")
                 elif time_range == "YEAR":
                     raise NotImplementedError("addYear")
-                
-                await asyncio.sleep(2)
-            print("]")
+                print(f"{next_date=}") 
+                await asyncio.sleep(5)
+            print("]", file=outf)
 
         except ApiError as err:
             print(err.message)
             print(err.response)
             print(err.status)
 
+
+async def main(user: str, passw: str, first_day: str, time_range: str):
+    for device_name, device_id in device_ids.items():
+        for function_name, function_id in functions.items():
+            for energy_name, energy_type in energy_types.items():
+                if device_name == "Hydraulikstation" and energy_name == "Umweltenergie":
+                    continue # Beim Innengerät gibt es keine Umweltenergie
+                fname = f"{device_name}-{function_name}-{energy_name}-{time_range.lower()}.json"
+                await read_data(user, passw, first_day, time_range, device_id, function_id, energy_type, fname)
 
 if __name__ == "__main__":
     if not len(sys.argv) == 5:
