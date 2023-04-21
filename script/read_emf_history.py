@@ -99,7 +99,7 @@ async def main(user: str, passw: str, first_day: str, time_range: str):
             for energy_name, energy_type in energy_types.items():
                 if device_name == "Hydraulikstation" and energy_name == "Umweltenergie":
                     continue # Beim Innengerät gibt es keine Umweltenergie
-                fname = f"{device_name}-{function_name}-{energy_name}-{time_range.lower()}.json"
+                fname = f"{device_name}-{function_name}-{energy_name}-{first_day}-{time_range.lower()}.json"
                 await read_data(user, passw, first_day, time_range, device_id, function_id, energy_type, fname)
 
 if __name__ == "__main__":
