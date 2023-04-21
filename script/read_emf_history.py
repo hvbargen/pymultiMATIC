@@ -107,7 +107,7 @@ if __name__ == "__main__":
     user = sys.argv[1]
     passw = sys.argv[2]
     first_day = sys.argv[3]
-    time_range = sys.argv[4]
+    time_range = sys.argv[4].upper()
     assert(time_range in ["DAY", "WEEK", "MONTH, YEAR"])
 
     asyncio.get_event_loop().run_until_complete(main(user, passw, first_day, time_range))
