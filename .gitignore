@@ -114,3 +114,5 @@ venv*/
 script/dump_result
 
 output/
+output-bereinigt/
+output copy/

@@ -33,8 +33,6 @@ async def read_data(user: str, passw: str, first_day, time_range, device_id: str
     outf = open(Path("output") / fname, "wt", encoding="utf-8")
 
     print(f"// Retrieving EMF data for {device_id=} function={function}\n// {time_range=} {begin_date=} {end_date=} ...")
-    print(f"// Retrieving EMF data for {device_id=} function={function}\n// {time_range=} {begin_date=} {end_date=} ", file=outf)
-
     print('// Trying to connect with user ' + user)
 
     async with aiohttp.ClientSession() as sess:
@@ -55,7 +53,7 @@ async def read_data(user: str, passw: str, first_day, time_range, device_id: str
 
         next_date = begin_date
 
-        print("[", file=outf)
+        print("[", file = outf)
         first = True
         try:
             while next_date <= end_date:
@@ -70,8 +68,8 @@ async def read_data(user: str, passw: str, first_day, time_range, device_id: str
                 if first:
                     first = False
                 else:
-                    print(",", file=outf)
-                print(f"// {url}", file=outf)
+                    print(",", file = outf)
+                # print(f"// {url}", file=outf)
 
                 print(json.dumps(await connector.get(url)), file=outf)
 
@@ -85,7 +83,7 @@ async def read_data(user: str, passw: str, first_day, time_range, device_id: str
                     raise NotImplementedError("addYear")
                 print(f"{next_date=}") 
                 await asyncio.sleep(5)
-            print("]", file=outf)
+            print("]", file = outf)
 
         except ApiError as err:
             print(err.message)
