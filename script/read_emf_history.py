@@ -2,6 +2,7 @@
 import asyncio
 import json
 import datetime
+import calendar
 import sys
 import aiohttp
 from pathlib import Path
@@ -24,6 +25,26 @@ energy_types = {
     "Stromverbrauch": "CONSUMED_ELECTRICAL_POWER",
     "Umweltenergie": "ENVIRONMENTAL_YIELD"
 }
+
+
+def add_months(date, months):
+    months_count = date.year * 12 + date.month + months - 1
+
+    # Calculate the year
+    year = months_count // 12
+
+    # Calculate the month
+    month = months_count % 12 + 1
+
+    # Calculate the day
+    day = date.day
+    last_day_of_month = calendar.monthrange(year, month)[1]
+    if day > last_day_of_month:
+        day = last_day_of_month
+
+    new_date = datetime.date(year, month, day)
+    return new_date
+
 
 async def read_data(user: str, passw: str, first_day, time_range, device_id: str, function: str, energy_type: str, fname: str):
 
@@ -78,9 +99,9 @@ async def read_data(user: str, passw: str, first_day, time_range, device_id: str
                 elif time_range == "WEEK":
                     next_date += datetime.timedelta(days=7)
                 elif time_range == "MONTH":
-                    raise NotImplementedError("addMonth")
+                    next_date = add_months(next_date, 1)
                 elif time_range == "YEAR":
-                    raise NotImplementedError("addYear")
+                    next_date = add_months(next_date, 12)
                 print(f"{next_date=}") 
                 await asyncio.sleep(5)
             print("]", file = outf)
@@ -108,6 +129,6 @@ if __name__ == "__main__":
     passw = sys.argv[2]
     first_day = sys.argv[3]
     time_range = sys.argv[4].upper()
-    assert(time_range in ["DAY", "WEEK", "MONTH, YEAR"])
+    assert(time_range in ["DAY", "WEEK", "MONTH", "YEAR"])
 
     asyncio.get_event_loop().run_until_complete(main(user, passw, first_day, time_range))
